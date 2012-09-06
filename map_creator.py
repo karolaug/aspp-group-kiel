@@ -1,12 +1,13 @@
-
-#!/usr/bin/python                                                               
-
+import numpy as np
 import pelita 
 from pelita import datamodel as dm
 
 from pelita.game_master import GameMaster
 from pelita.player import StoppingPlayer, RandomPlayer, NQRandomPlayer, SimpleTeam
 from pelita.viewer import AsciiViewer
+
+
+
 
 layout = (
 """ ##################                                                  
@@ -20,14 +21,8 @@ gm.register_team(SimpleTeam(NQRandomPlayer(), NQRandomPlayer()))
 
 
 
-mz = dm.Maze(10,10)
+w = gm.universe.maze.width
+h = gm.universe.maze.height
 
-bt = dm.Bot(1, (0,0), 0, 0)
-
-tm = dm.Team(0,'teamA',0)
-
-un = dm.CTFUniverse(mz, tm, bt)
-
-
-
+mp = np.zeros((w,h))
 
