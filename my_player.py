@@ -62,20 +62,23 @@ class IdentityCrisis(AbstractPlayer):
         #    self.say('You are done,  BITCH!')
         #return     
 
-        if self.round_index < 20:
-            # Aggresive to start with
+        if self.round_index < 10:
             self.current_strategy = 0
+
+        if self.round_index < 50:
+            # Aggresive to start with
+            self.current_strategy = 1
             return
 
         # If the game is over round 20, start taking decisions
-        #self.score_history[self.enemy_index, self.round_index]
-        #self.score_history[self.me.team_index, self.round_index]
 
         if self.score_history[self.enemy_index, self.round_index] > self.score_history[self.me.team_index, self.round_index]:
-            self.current_strategy = 0
+            self.current_strategy = 1
+            return
             #print 'Im hunting you, BITCH!'
         else:
-            self.current_strategy = 1
+            self.current_strategy = 2
+            return
             #print 'Nothing to do here'
 
 
@@ -85,9 +88,6 @@ class IdentityCrisis(AbstractPlayer):
         self.score_history[1, self.round_index] = self.current_uni.teams[1].score
         #print self.score_history
 
-    # For the first 70 moves, go aggresive (but not so much)
-    # If the move is above 70, check the score
-    # Track the score changes. Calculate the derivative and decide on that.
 
     def get_move(self):
         #print 'This is my index ', self.me.team_index
@@ -103,14 +103,17 @@ class IdentityCrisis(AbstractPlayer):
 
         if self.current_strategy == 0:
             return self.get_move_random()
-        elif self.current_strategy == 1:
-            return self.get_move_stopping()
+        if self.current_strategy == 1:
+            return self.bfs_food()
         elif self.current_strategy == 2:
-            pass
+            return self.get_move_stopping()
         elif self.current_strategy == 3:
             pass
         elif self.current_strategy == 4:
             pass
+        elif self.current_strategy == 5:
+            pass
+
 
     def get_move_stopping(self):
         return datamodel.stop

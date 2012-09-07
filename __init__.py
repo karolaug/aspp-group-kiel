@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from pelita.player import SimpleTeam
-from .my_player import MyPlayer0, MyPlayer1, BSFPlayer
+from .my_player import MyPlayer0, MyPlayer1, IdentityCrisis
 
 # The default factory method, which this module must export.
 # It must return an instance of `SimpleTeam`  containing
@@ -10,7 +10,7 @@ from .my_player import MyPlayer0, MyPlayer1, BSFPlayer
 # the first and second player.
 
 def factory():
-    return SimpleTeam("Group0", BSFPlayer(), BSFPlayer())
+    return SimpleTeam("Group0", IdentityCrisis(), IdentityCrisis())
 
 # For testing purposes, one may use alternate factory methods::
 #
