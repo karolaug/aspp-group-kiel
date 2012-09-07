@@ -113,14 +113,6 @@ class IdentityCrisis(AbstractPlayer):
             self.strategy_1, self.strategy_2 = self.strategy_2, self.strategy_1
 
 
-            if self.me.in_own_zone == True and self.other_team_bots[0].in_own_zone == True:
-                if self.counter < 5:
-                    self.counter += 1
-                else:
-                    self.strategy_1, self.strategy_2 = self.strategy_2, self.strategy_1
-                    self.counter = 0
-
-
         if self.me.index == 1 or self.me.index == 2:
             return self.strategy_1()
         else:
