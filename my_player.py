@@ -45,7 +45,7 @@ class IdentityCrisis(AbstractPlayer):
         self.position_tracker = []
 
         self.adjacency = AdjacencyList(self.current_uni)
-        self.current_path = self.bfs_food()
+        #self.current_path = self.bfs_food()
 
         self.current_strategy = 0
         self.round_index = None
@@ -55,6 +55,13 @@ class IdentityCrisis(AbstractPlayer):
         else:
             self.enemy_index = 0
         
+        self.path = self.path_to_border
+        self.tracking_idx = None
+        self.strategy_1 = self.defense_player
+        self.strategy_2 = self.ofense_player
+        self.counter = 0
+
+
 
     # round_index is part of AbstractPlayer
     # _current_game_state
@@ -77,7 +84,6 @@ class IdentityCrisis(AbstractPlayer):
 
         # If the game is over round N, start taking decisions
         diff_score_evolution = self.score_history[self.me.team_index, :] - self.score_history[self.enemy_index, :]
-        self.enemy_food
 
         # Compare and decide!
         # Our score is lower
@@ -100,48 +106,36 @@ class IdentityCrisis(AbstractPlayer):
 
 
     def get_move(self):
-        #print 'This is my index ', self.me.team_index
+#        print 'This is my index ', self.me.team_index
 
-        # Track the position
-        # If distance between position 0 and position 5 (where 5 is current) is less than 2: pick different strategy
-        self.position_tracker.append(self.me.current_pos)
-        if len(self.position_tracker) > 8:
-            self.position_tracker.pop(0)
-        #print self.me.index, self.position_tracker
 
-        
-        if self.round_index is None:
-            self.round_index = 0
+        if self.current_pos == self.initial_pos or self.other_team_bots[0].current_pos == self.other_team_bots[0].initial_pos:
+            self.strategy_1, self.strategy_2 = self.strategy_2, self.strategy_1
+
+
+            if self.me.in_own_zone == True and self.other_team_bots[0].in_own_zone == True:
+                if self.counter < 5:
+                    self.counter += 1
+                else:
+                    self.strategy_1, self.strategy_2 = self.strategy_2, self.strategy_1
+                    self.counter = 0
+            else:
+                self.counter = 0
+
+
+        if self.strategy_1 == self.strategy_2:
+            self.strategy_1, self.strategy_2 = self.strategy_2, self.strategy_1
+
+
+
+
+
+
+        if self.me.index == 1 or self.me.index == 2:
+            return self.strategy_1()
         else:
-            self.round_index += 1
+            return self.strategy_2()
 
-        self.read_score()
-
-        old_strategy = self.current_strategy
-        self.define_strategy()
-        if self.current_strategy != old_strategy:
-            print 'The strategy has changed'
-            #self.say(self.sayings[self.round_index % 7])
-        else:
-            # Distance between last move and last - 5 moves
-            tracker_dist = datamodel.manhattan_dist(self.position_tracker[0], self.position_tracker[-1])
-            if tracker_dist < 2:
-                # Change strategy randomly
-                self.current_strategy = random.randint(0, 2)# random number between 0 and number of strategies
-                print 'Changed randomly to strategy ', self.current_strategy
-
-        if self.current_strategy == 0:
-            return self.get_move_random()
-        if self.current_strategy == 1:
-            return self.bfs_food()
-        elif self.current_strategy == 2:
-            return self.get_move_stopping()
-        elif self.current_strategy == 3:
-            pass
-        elif self.current_strategy == 4:
-            pass
-        elif self.current_strategy == 5:
-            pass
 
 
     def get_move_stopping(self):
@@ -150,7 +144,7 @@ class IdentityCrisis(AbstractPlayer):
     def get_move_random(self):
         return self.rnd.choice(self.legal_moves.keys())  
 
-    def bfs_food(self):
+    def ofense_player(self):
         """ Breadth first search for food.
 
         Returns
@@ -161,8 +155,10 @@ class IdentityCrisis(AbstractPlayer):
 
         """
         e_food = self.enemy_food
-        food_path =  self.adjacency.bfs(self.current_pos, self.enemy_food)
-
+        try:
+            food_path =  self.adjacency.bfs(self.current_pos, self.enemy_food)
+        except NoPathException:
+            return datamodel.stop
         possible_targets = [enemy for enemy in self.enemy_bots
                             if self.team.in_zone(enemy.current_pos) == False and enemy.noisy == False]
         if possible_targets:
@@ -171,13 +167,12 @@ class IdentityCrisis(AbstractPlayer):
             closest_enemy, enemy_path = min(possible_paths,
                                             key=lambda enemy_path: len(enemy_path[1]))
             #print len(enemy_path)
-            if len(enemy_path) < 4:
+            if len(enemy_path) < 3:
                 legal_moves = self.legal_moves
                 del legal_moves[datamodel.stop]
                 del legal_moves[diff_pos(self.current_pos, enemy_path[-1])]
                 for move in legal_moves:
                     f_pos = (self.current_pos[0]+move[0], self.current_pos[1]+move[1])
-                    print self.current_pos, enemy_path
                     if f_pos != food_path[-1]:
                         e_food.pop()
                         try:
@@ -190,30 +185,6 @@ class IdentityCrisis(AbstractPlayer):
 
         return diff_pos(self.current_pos, food_path.pop())
 
-
-class OurDefensePlayer(AbstractPlayer):
-    """ A crude defensive player.
-
-    Will move towards the border, and as soon as it notices enemies in its
-    territory, it will start to track them. When it kills the enemy it returns
-    to the border and waits there for more. Like the BFSPlayer this player
-    stores the maze as an adjacency list [1] but uses the breadth first search [2] to
-    find the closest position on the border.  However it additionally uses the
-    A* (A Star) search [3] to find the shortest path to its target.
-
-    The adjacency lits representation (AdjacencyList) and A* search
-    (AdjacencyList.a_star) are imported from pelita.graph.
-
-    * [1] http://en.wikipedia.org/wiki/Adjacency_list
-    * [2] http://en.wikipedia.org/wiki/Breadth-first_search
-    * [3] http://en.wikipedia.org/wiki/A*_search_algorithm
-
-    """
-    def set_initial(self):
-        self.adjacency = AdjacencyList(self.current_uni)
-        self.path = self.path_to_border
-        self.tracking_idx = None
-
     @property
     def path_to_border(self):
         """ Path to the closest border position. """
@@ -222,29 +193,6 @@ class OurDefensePlayer(AbstractPlayer):
             #return self.adjacency.bfs(self.current_pos, self.team_border)
         except NoPathException:
             return None
-    
-    #@property
-    def evaluate_borders(self, positions):
-        good_borders = []
-        #print positions
-        ns = set([(0, -1), (0, 1)])
-        #print "ns is", ns
-        #ns.isdisjoint(
-        #moves = set(self.legal_moves.keys())
-        #print "keys are", moves
-        #if ns.isdisjoint(moves):
-        print self.group_consecutives(positions)
-        
-        
-        for x,y in positions:
-            p_north = (x,y+1) in positions 
-            p_south = (x,y-1) in positions
-            if p_north or p_south:
-                good_borders.append((x,y))
-                  
-        if len(good_borders) == 0:
-            good_borders = positions 
-        return good_borders
     
     def group_consecutives(self,border_positions):
         try:
@@ -272,13 +220,15 @@ class OurDefensePlayer(AbstractPlayer):
     @property
     def tracking_target(self):
         """ Bot object we are currently tracking. """
-        self.say("come here! Dont run away you chicken")
+        #self.say("come here! Dont run away you chicken")
+        self.say('Niut!')
         return self.current_uni.bots[self.tracking_idx]
 
     #def get_move_defense(self):
-    def get_move(self):
+    def defense_player(self):
         
         # if we were killed, for whatever reason, reset the path
+        self.path = None
         if self.current_pos == self.initial_pos or self.path is None:
             self.path = self.path_to_border
 
