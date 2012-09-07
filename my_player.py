@@ -35,6 +35,9 @@ class IdentityCrisis(AbstractPlayer):
     # Set the team name to Group0
 
     def set_initial(self):
+        self.adjacency = AdjacencyList(self.current_uni)
+        self.current_path = self.bfs_food()
+
         self.current_strategy = 0
         self.round_index = None
         self.score_history = zeros([2, 300])
@@ -115,28 +118,6 @@ class IdentityCrisis(AbstractPlayer):
     def get_move_random(self):
         return self.rnd.choice(self.legal_moves.keys())  
 
-
-class BSFPlayer(AbstractPlayer):
-    """ This player uses breadth first search to always go to the closest food.
-
-    This player uses an adjacency list [1] to store the topology of the
-    maze. It will then do a breadth first search [2] to search for the
-    closest food. When found, it will follow the determined path until it
-    reaches the food. This continues until all food has been eaten or the
-    enemy wins.
-
-    The adjacency lits representation (AdjacencyList) and breadth first search
-    (AdjacencyList.bfs) are imported from pelita.graph.
-
-    * [1] http://en.wikipedia.org/wiki/Adjacency_list
-    * [2] http://en.wikipedia.org/wiki/Breadth-first_search
-
-    """
-    def set_initial(self):
-        # Before the game starts we initialise our adjacency list.
-        self.adjacency = AdjacencyList(self.current_uni)
-        self.current_path = self.bfs_food()
-
     def bfs_food(self):
         """ Breadth first search for food.
 
@@ -177,11 +158,3 @@ class BSFPlayer(AbstractPlayer):
 
         return diff_pos(self.current_pos, food_path.pop())
 
-    def get_move(self):
-        self.current_path = self.bfs_food()
-        try:
-            return self.current_path
-        except ValueError:
-            # If there was a timeout, and we are no longer where we think we
-            # were, calculate a new path.
-            return self.get_move()
