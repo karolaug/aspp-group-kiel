@@ -10,7 +10,7 @@ from .my_player import MyPlayer0, MyPlayer1, IdentityCrisis
 # the first and second player.
 
 def factory():
-    return SimpleTeam("Group0", IdentityCrisis(), IdentityCrisis())
+    return SimpleTeam("NoTimeToCheckIt", IdentityCrisis(), IdentityCrisis())
 
 # For testing purposes, one may use alternate factory methods::
 #

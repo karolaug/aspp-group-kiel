@@ -60,7 +60,7 @@ class IdentityCrisis(AbstractPlayer):
         self.strategy_1 = self.defense_player
         self.strategy_2 = self.ofense_player
         self.counter = 0
-
+        self.counter2 = 0
 
 
     # round_index is part of AbstractPlayer
@@ -119,16 +119,6 @@ class IdentityCrisis(AbstractPlayer):
                 else:
                     self.strategy_1, self.strategy_2 = self.strategy_2, self.strategy_1
                     self.counter = 0
-            else:
-                self.counter = 0
-
-
-        if self.strategy_1 == self.strategy_2:
-            self.strategy_1, self.strategy_2 = self.strategy_2, self.strategy_1
-
-
-
-
 
 
         if self.me.index == 1 or self.me.index == 2:
