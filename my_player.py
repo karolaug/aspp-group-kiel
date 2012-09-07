@@ -161,15 +161,18 @@ class BSFPlayer(AbstractPlayer):
             if len(enemy_path) < 4:
                 legal_moves = self.legal_moves
                 del legal_moves[datamodel.stop]
-                del legal_moves[diff_pos(self.current_pos, enemy_path.pop())]
+                del legal_moves[diff_pos(self.current_pos, enemy_path[-1])]
                 for move in legal_moves:
                     f_pos = (self.current_pos[0]+move[0], self.current_pos[1]+move[1])
-                    if f_pos == diff_pos(self.current_pos, food_path.pop()):
-                        return f_pos
-                    print e_food
-                    e_food.pop()
-                    food_path = self.adjacency.bfs(self.current_pos, self.enemy_food)
-                    
+                    print self.current_pos, enemy_path
+                    if f_pos != food_path[-1]:
+                        e_food.pop()
+                        try:
+                            food_path = self.adjacency.bfs(self.current_pos, e_food)
+                        except NoPathException:
+                            break
+                    else: 
+                        return diff_pos(self.current_pos, food_path[-1])
                 return random.choice(legal_moves.keys())
 
         return diff_pos(self.current_pos, food_path.pop())
