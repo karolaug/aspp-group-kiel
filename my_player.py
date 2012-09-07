@@ -42,6 +42,7 @@ class IdentityCrisis(AbstractPlayer):
                         "Man, those pellets are tasty!",
                         "Start praying ...",
                         "Come, I'll show you how to do this"]
+        self.position_tracker = []
 
         self.adjacency = AdjacencyList(self.current_uni)
         self.current_path = self.bfs_food()
@@ -64,25 +65,29 @@ class IdentityCrisis(AbstractPlayer):
 
     def define_strategy(self):
         
-
         # First 10 rounds are random, avoid having same starting point for the two agents
         if self.round_index < 10 and self.me.index == 0:
             self.current_strategy = 0
             return 
 
-        # Start being aggresive
-        if self.round_index < 50:
+        # Play the first N rounds aggresively
+        if self.round_index < 20:
             self.current_strategy = 1
             return
 
-        # If the game is over round 20, start taking decisions
+        # If the game is over round N, start taking decisions
+        diff_score_evolution = self.score_history[self.me.team_index, :] - self.score_history[self.enemy_index, :]
+        self.enemy_food
 
-        if self.score_history[self.enemy_index, self.round_index] > self.score_history[self.me.team_index, self.round_index]:
+        # Compare and decide!
+        # Our score is lower
+        if diff_score_evolution[self.round_index] < 0:
             self.current_strategy = 1
             return
             #print 'Im hunting you, BITCH!'
-        else:
-            self.current_strategy = 2
+
+        if diff_score_evolution[self.round_index] > 0:
+            self.current_strategy = 0
             return
             #print 'Nothing to do here'
 
@@ -96,6 +101,14 @@ class IdentityCrisis(AbstractPlayer):
 
     def get_move(self):
         #print 'This is my index ', self.me.team_index
+
+        # Track the position
+        # If distance between position 0 and position 5 (where 5 is current) is less than 2: pick different strategy
+        self.position_tracker.append(self.me.current_pos)
+        if len(self.position_tracker) > 8:
+            self.position_tracker.pop(0)
+        #print self.me.index, self.position_tracker
+
         
         if self.round_index is None:
             self.round_index = 0
@@ -109,6 +122,13 @@ class IdentityCrisis(AbstractPlayer):
         if self.current_strategy != old_strategy:
             print 'The strategy has changed'
             #self.say(self.sayings[self.round_index % 7])
+        else:
+            # Distance between last move and last - 5 moves
+            tracker_dist = datamodel.manhattan_dist(self.position_tracker[0], self.position_tracker[-1])
+            if tracker_dist < 2:
+                # Change strategy randomly
+                self.current_strategy = random.randint(0, 2)# random number between 0 and number of strategies
+                print 'Changed randomly to strategy ', self.current_strategy
 
         if self.current_strategy == 0:
             return self.get_move_random()
