@@ -53,6 +53,7 @@ class BSFPlayer(AbstractPlayer):
             closest food. The first element is the final destination.
 
         """
+        e_food = self.enemy_food
         food_path =  self.adjacency.bfs(self.current_pos, self.enemy_food)
 
         possible_targets = [enemy for enemy in self.enemy_bots
@@ -67,6 +68,14 @@ class BSFPlayer(AbstractPlayer):
                 legal_moves = self.legal_moves
                 del legal_moves[datamodel.stop]
                 del legal_moves[diff_pos(self.current_pos, enemy_path.pop())]
+                for move in legal_moves:
+                    f_pos = (self.current_pos[0]+move[0], self.current_pos[1]+move[1])
+                    if f_pos == diff_pos(self.current_pos, food_path.pop()):
+                        return f_pos
+                    print e_food
+                    e_food.pop()
+                    food_path = self.adjacency.bfs(self.current_pos, self.enemy_food)
+                    
                 return random.choice(legal_moves.keys())
 
         return diff_pos(self.current_pos, food_path.pop())

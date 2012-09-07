@@ -10,7 +10,7 @@ from .my_player import MyPlayer0, MyPlayer1, BSFPlayer
 # the first and second player.
 
 def factory():
-    return SimpleTeam("Group0", MyPlayer0(), BSFPlayer())
+    return SimpleTeam("Group0", BSFPlayer(), BSFPlayer())
 
 # For testing purposes, one may use alternate factory methods::
 #
