@@ -35,6 +35,14 @@ class IdentityCrisis(AbstractPlayer):
     # Set the team name to Group0
 
     def set_initial(self):
+        self.sayings = ["You're going down ... DOWNTOWN!",
+                        "Is that all you got?",
+                        "My grandma can do better than that!",
+                        "You should consider changing jobs",
+                        "Man, those pellets are tasty!",
+                        "Start praying ...",
+                        "Come, I'll show you how to do this"]
+
         self.adjacency = AdjacencyList(self.current_uni)
         self.current_path = self.bfs_food()
 
@@ -55,18 +63,15 @@ class IdentityCrisis(AbstractPlayer):
     #. 
 
     def define_strategy(self):
+        
 
-        # Calculate the function that tells you which strategy
-        #if self.round_index % 20 == 0:
-        #    self.current_strategy = mod(self.current_strategy+1, 2)
-        #    self.say('You are done,  BITCH!')
-        #return     
-
-        if self.round_index < 10:
+        # First 10 rounds are random, avoid having same starting point for the two agents
+        if self.round_index < 10 and self.me.index == 0:
             self.current_strategy = 0
+            return 
 
+        # Start being aggresive
         if self.round_index < 50:
-            # Aggresive to start with
             self.current_strategy = 1
             return
 
@@ -99,7 +104,11 @@ class IdentityCrisis(AbstractPlayer):
 
         self.read_score()
 
+        old_strategy = self.current_strategy
         self.define_strategy()
+        if self.current_strategy != old_strategy:
+            print 'The strategy has changed'
+            #self.say(self.sayings[self.round_index % 7])
 
         if self.current_strategy == 0:
             return self.get_move_random()
