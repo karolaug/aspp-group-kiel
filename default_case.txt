@@ -1,1 +1,0 @@
-./pelitagame  StoppingPlayer,StoppingPlayer StoppingPlayer,StoppingPlayer --layoutfile=layouts/small_without_dead_ends_093.layout
